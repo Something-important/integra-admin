@@ -1,0 +1,72 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Next.js
+/.next/
+/out/
+
+# Production
+/build
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
+.env
+.env.production
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Config files that might contain secrets
+config/*.json
+!config/example.json
+
+# Temporary files
+temp-utils/
+.temp/
+.tmp/
+
+# Private keys and sensitive data
+*.key
+*.pem
+*.p12
+*.keystore
+**/private/
+**/secrets/
+
+# Claude Code
+.claude/

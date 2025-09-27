@@ -1,0 +1,160 @@
+[
+  {
+    "id": "1",
+    "walletAddress": "0xad95fbf311a6ee0221a4bade4ae7defd8ce98ebb",
+    "email": "sumit@example.com",
+    "displayName": "sumit",
+    "status": "pending",
+    "role": "investor",
+    "totalInvestments": "2.5",
+    "propertiesOwned": 3,
+    "joinDate": "2025-09-27T11:27:39.579Z",
+    "lastActive": "2025-09-27T12:53:20.686Z",
+    "kycStatus": "pending",
+    "bio": "fsdgfdgdf",
+    "location": "New York, NY",
+    "investmentPreferences": [
+      "Residential"
+    ],
+    "socialLinks": {
+      "twitter": "",
+      "linkedin": "",
+      "website": "",
+      "discord": ""
+    },
+    "notifications": {
+      "email": true,
+      "sms": false,
+      "push": true
+    },
+    "createdAt": "2025-09-27T11:27:39.579Z",
+    "updatedAt": "2025-09-27T16:55:10.070Z"
+  },
+  {
+    "id": "2",
+    "walletAddress": "0x742d35cc6cf6c6e5cb3e63e7b3a7e3c4e4b4f3e7",
+    "email": "john.doe@example.com",
+    "displayName": "John Doe",
+    "status": "active",
+    "role": "investor",
+    "totalInvestments": "5.8",
+    "propertiesOwned": 5,
+    "joinDate": "2024-01-15T10:00:00Z",
+    "lastActive": "2025-09-27T14:30:00Z",
+    "kycStatus": "verified",
+    "bio": "Experienced real estate investor looking for diversified portfolio opportunities.",
+    "location": "Los Angeles, CA",
+    "investmentPreferences": [
+      "Residential",
+      "Commercial",
+      "Luxury"
+    ],
+    "socialLinks": {
+      "twitter": "@johndoe_investor",
+      "linkedin": "linkedin.com/in/johndoe",
+      "website": "johndoe-investments.com",
+      "discord": "JohnDoe#1234"
+    },
+    "notifications": {
+      "email": true,
+      "sms": true,
+      "push": true
+    },
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2025-09-27T14:30:00Z"
+  },
+  {
+    "id": "3",
+    "walletAddress": "0x1234567890123456789012345678901234567890",
+    "email": "jane.smith@example.com",
+    "displayName": "Jane Smith",
+    "status": "pending",
+    "role": "user",
+    "totalInvestments": "0.0",
+    "propertiesOwned": 0,
+    "joinDate": "2025-09-25T16:00:00Z",
+    "lastActive": "2025-09-26T10:15:00Z",
+    "kycStatus": "pending",
+    "bio": "New to real estate investment, interested in learning about tokenized properties.",
+    "location": "Chicago, IL",
+    "investmentPreferences": [
+      "Residential"
+    ],
+    "socialLinks": {
+      "twitter": "",
+      "linkedin": "linkedin.com/in/janesmith",
+      "website": "",
+      "discord": ""
+    },
+    "notifications": {
+      "email": true,
+      "sms": false,
+      "push": false
+    },
+    "createdAt": "2025-09-25T16:00:00Z",
+    "updatedAt": "2025-09-26T10:15:00Z"
+  },
+  {
+    "id": "5",
+    "walletAddress": "0x9876543210987654321098765432109876543210",
+    "email": "mike.investor@example.com",
+    "displayName": "Mike Rodriguez",
+    "status": "suspended",
+    "role": "investor",
+    "totalInvestments": "1.2",
+    "propertiesOwned": 2,
+    "joinDate": "2024-03-10T09:30:00Z",
+    "lastActive": "2025-09-20T11:22:00Z",
+    "kycStatus": "verified",
+    "bio": "Suspended pending investigation of account activity.",
+    "location": "Miami, FL",
+    "investmentPreferences": [
+      "Commercial",
+      "Industrial"
+    ],
+    "socialLinks": {
+      "twitter": "",
+      "linkedin": "",
+      "website": "",
+      "discord": "MikeR#5678"
+    },
+    "notifications": {
+      "email": true,
+      "sms": true,
+      "push": false
+    },
+    "createdAt": "2024-03-10T09:30:00Z",
+    "updatedAt": "2025-09-20T11:22:00Z"
+  },
+  {
+    "id": "6",
+    "walletAddress": "0xfedcba0987654321fedcba0987654321fedcba09",
+    "email": "sarah.wilson@example.com",
+    "displayName": "Sarah Wilson",
+    "status": "rejected",
+    "role": "user",
+    "totalInvestments": "0.0",
+    "propertiesOwned": 0,
+    "joinDate": "2025-09-22T14:15:00Z",
+    "lastActive": "2025-09-22T14:30:00Z",
+    "kycStatus": "rejected",
+    "bio": "Application rejected due to incomplete KYC documentation.",
+    "location": "Austin, TX",
+    "investmentPreferences": [
+      "Residential"
+    ],
+    "socialLinks": {
+      "twitter": "",
+      "linkedin": "",
+      "website": "",
+      "discord": ""
+    },
+    "notifications": {
+      "email": false,
+      "sms": false,
+      "push": false
+    },
+    "createdAt": "2025-09-22T14:15:00Z",
+    "updatedAt": "2025-09-22T14:30:00Z"
+  }
+]
