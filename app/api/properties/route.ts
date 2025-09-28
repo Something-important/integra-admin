@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProperties, saveProperty } from '~~/temp-utils/propertyStorage';
 import { CreatePropertyRequest, PropertiesResponse, PropertyResponse, Property, PropertyFilters } from '~~/types/property';
+import supabase from '~~/utils/supabase';
 
 // Helper function to get wallet address from request headers
 function getWalletAddress(request: NextRequest): string | null {
@@ -44,12 +44,107 @@ export async function GET(request: NextRequest): Promise<NextResponse<Properties
       filters.tags = tagsParam.split(',');
     }
 
-    const { properties, total } = await getProperties(filters);
+    // Build Supabase query options
+    const queryOptions: any = {
+      select: '*',
+      count: true
+    };
+
+    // Add where conditions for exact matches
+    const whereConditions: any = {};
+    if (filters.status) {
+      whereConditions.status = filters.status;
+    }
+    if (filters.propertyType) {
+      whereConditions.property_type = filters.propertyType;
+    }
+
+    if (Object.keys(whereConditions).length > 0) {
+      queryOptions.where = whereConditions;
+    }
+
+    // Add pagination
+    if (filters.limit) {
+      queryOptions.limit = filters.limit;
+    }
+    if (filters.offset) {
+      queryOptions.offset = filters.offset;
+    }
+
+    // Add ordering (newest first)
+    queryOptions.order = 'created_at.desc';
+
+    const result = await supabase.select<any>('integra_properties', queryOptions);
+
+    if (result.error) {
+      console.error('Error fetching properties from Supabase:', result.error);
+      return NextResponse.json(
+        { success: false, error: result.error.message },
+        { status: 500 }
+      );
+    }
+
+    let properties = result.data || [];
+
+    // Apply client-side filters for complex searches
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      properties = properties.filter((property: any) =>
+        property.title?.toLowerCase().includes(searchLower) ||
+        property.description?.toLowerCase().includes(searchLower) ||
+        property.location?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (filters.location) {
+      properties = properties.filter((property: any) =>
+        property.location?.toLowerCase().includes(filters.location!.toLowerCase())
+      );
+    }
+
+    // Filter by tags if specified
+    if (filters.tags && filters.tags.length > 0) {
+      properties = properties.filter((property: any) => {
+        const propertyTags = property.tags || [];
+        return filters.tags!.some(tag =>
+          propertyTags.some((propertyTag: string) =>
+            propertyTag.toLowerCase().includes(tag.toLowerCase())
+          )
+        );
+      });
+    }
+
+    // Convert database response to API format (snake_case to camelCase)
+    const formattedProperties: Property[] = properties.map((property: any) => ({
+      id: property.id,
+      title: property.title,
+      description: property.description,
+      location: property.location,
+      price: property.price,
+      shares: property.total_shares,
+      availableShares: property.available_shares,
+      image: property.image,
+      images: property.images || [],
+      tags: property.tags || [],
+      roi: property.roi,
+      propertyType: property.property_type,
+      ownerAddress: property.owner_address,
+      status: property.status,
+      monthlyIncome: property.monthly_income,
+      totalArea: property.total_area,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      yearBuilt: property.year_built,
+      amenities: property.amenities || [],
+      coordinates: property.coordinates,
+      createdAt: property.created_at,
+      updatedAt: property.updated_at
+    }));
 
     return NextResponse.json({
       success: true,
-      data: properties,
-      total
+      data: formattedProperties,
+      total: result.count || formattedProperties.length
     });
   } catch (error) {
     console.error('Error fetching properties:', error);
@@ -104,34 +199,78 @@ export async function POST(request: NextRequest): Promise<NextResponse<PropertyR
       );
     }
 
-    // Prepare property data
-    const propertyData: Omit<Property, 'createdAt' | 'updatedAt'> = {
+    // Prepare property data for database (using snake_case for column names)
+    const propertyData = {
       id: generatePropertyId(),
       title: body.title.trim(),
       description: body.description?.trim(),
       location: body.location.trim(),
       price: body.price,
-      shares: body.shares,
-      availableShares: body.shares, // Initially all shares are available
+      total_shares: body.shares,
+      available_shares: body.shares, // Initially all shares are available
       image: body.image,
       images: body.images || [],
       tags: body.tags || [],
       roi: body.roi || "0",
-      propertyType: body.propertyType,
-      ownerAddress: ownerAddress.toLowerCase(),
+      property_type: body.propertyType,
+      owner_address: ownerAddress.toLowerCase(),
       status: 'active',
-      monthlyIncome: body.monthlyIncome,
-      totalArea: body.totalArea,
+      monthly_income: body.monthlyIncome,
+      total_area: body.totalArea,
       bedrooms: body.bedrooms,
       bathrooms: body.bathrooms,
-      yearBuilt: body.yearBuilt,
+      year_built: body.yearBuilt,
       amenities: body.amenities || [],
       coordinates: body.coordinates,
     };
 
-    const savedProperty = await saveProperty(propertyData);
+    const result = await supabase.insert<any>('integra_properties', propertyData);
 
-    return NextResponse.json({ success: true, data: savedProperty });
+    if (result.error) {
+      console.error('Error creating property in Supabase:', result.error);
+      return NextResponse.json(
+        { success: false, error: result.error.message },
+        { status: 500 }
+      );
+    }
+
+    // Convert database response back to camelCase for API response
+    const createdProperty = result.data as any;
+    if (createdProperty && Array.isArray(createdProperty) && createdProperty.length > 0) {
+      const property = createdProperty[0];
+      const responseProperty: Property = {
+        id: property.id,
+        title: property.title,
+        description: property.description,
+        location: property.location,
+        price: property.price,
+        shares: property.total_shares,
+        availableShares: property.available_shares,
+        image: property.image,
+        images: property.images || [],
+        tags: property.tags || [],
+        roi: property.roi,
+        propertyType: property.property_type,
+        ownerAddress: property.owner_address,
+        status: property.status,
+        monthlyIncome: property.monthly_income,
+        totalArea: property.total_area,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        yearBuilt: property.year_built,
+        amenities: property.amenities || [],
+        coordinates: property.coordinates,
+        createdAt: property.created_at,
+        updatedAt: property.updated_at
+      };
+
+      return NextResponse.json({ success: true, data: responseProperty });
+    }
+
+    return NextResponse.json(
+      { success: false, error: 'Property creation failed' },
+      { status: 500 }
+    );
   } catch (error) {
     console.error('Error creating property:', error);
     return NextResponse.json(

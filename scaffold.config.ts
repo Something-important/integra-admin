@@ -21,6 +21,7 @@ const scaffoldConfig = {
     chains.mainnet,
     chains.polygon,
     chains.arbitrum,
+    chains.arbitrumSepolia,
     chains.optimism,
     chains.base
   ],

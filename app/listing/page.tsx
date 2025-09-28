@@ -314,7 +314,7 @@ const PropertyListing: NextPage = () => {
               <CurrencyDollarIcon className="h-8 w-8" />
             </div>
             <div className="stat-title">Total Value</div>
-            <div className="stat-value text-secondary">{stats.totalValue} ETH</div>
+            <div className="stat-value text-secondary">{stats.totalValue} USD</div>
           </div>
           <div className="stat bg-base-100 shadow border border-base-300 rounded-lg">
             <div className="stat-figure text-accent">
@@ -484,7 +484,7 @@ const PropertyListing: NextPage = () => {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm text-base-content/60">Price</p>
-                        <p className="font-semibold">{property.price} ETH</p>
+                        <p className="font-semibold">{property.price} USD</p>
                       </div>
                       <div>
                         <p className="text-sm text-base-content/60">ROI</p>
@@ -612,7 +612,7 @@ const PropertyListing: NextPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="stat bg-base-200 rounded-lg p-4">
                     <div className="stat-title text-sm">Price</div>
-                    <div className="stat-value text-lg">{selectedProperty.price} ETH</div>
+                    <div className="stat-value text-lg">{selectedProperty.price} USD</div>
                   </div>
                   <div className="stat bg-base-200 rounded-lg p-4">
                     <div className="stat-title text-sm">ROI</div>
@@ -640,7 +640,7 @@ const PropertyListing: NextPage = () => {
                       {selectedProperty.status}
                     </span>
                   </p>
-                  <p><strong>Monthly Income:</strong> {selectedProperty.monthlyIncome} ETH</p>
+                  <p><strong>Monthly Income:</strong> {selectedProperty.monthlyIncome} USD</p>
                   {selectedProperty.totalArea && <p><strong>Area:</strong> {selectedProperty.totalArea} sq ft</p>}
                   {selectedProperty.bedrooms && <p><strong>Bedrooms:</strong> {selectedProperty.bedrooms}</p>}
                   {selectedProperty.bathrooms && <p><strong>Bathrooms:</strong> {selectedProperty.bathrooms}</p>}
@@ -738,7 +738,7 @@ const PropertyListing: NextPage = () => {
               {/* Price */}
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Price (ETH)</span>
+                  <span className="label-text">Price (USD)</span>
                 </label>
                 <input
                   type="text"
@@ -809,7 +809,7 @@ const PropertyListing: NextPage = () => {
               {/* Monthly Income */}
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Monthly Income (ETH)</span>
+                  <span className="label-text">Monthly Income (USD)</span>
                 </label>
                 <input
                   type="text"
@@ -897,7 +897,7 @@ const PropertyListing: NextPage = () => {
               {/* Price */}
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Price (ETH) *</span>
+                  <span className="label-text">Price (USD) *</span>
                 </label>
                 <input
                   type="text"
@@ -958,7 +958,7 @@ const PropertyListing: NextPage = () => {
               {/* Monthly Income */}
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Monthly Income (ETH)</span>
+                  <span className="label-text">Monthly Income (USD)</span>
                 </label>
                 <input
                   type="text"

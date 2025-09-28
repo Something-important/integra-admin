@@ -1,30 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { User, CreateUserRequest, UserFilters, UsersResponse, UserResponse } from '~~/types/user';
-
-const DATA_FILE = path.join(process.cwd(), 'data', 'users.json');
-
-// Helper function to read users from JSON file
-async function readUsers(): Promise<User[]> {
-  try {
-    const data = await fs.readFile(DATA_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading users file:', error);
-    return [];
-  }
-}
-
-// Helper function to write users to JSON file
-async function writeUsers(users: User[]): Promise<void> {
-  try {
-    await fs.writeFile(DATA_FILE, JSON.stringify(users, null, 2), 'utf8');
-  } catch (error) {
-    console.error('Error writing users file:', error);
-    throw error;
-  }
-}
+import supabase from '~~/utils/supabase';
 
 // Helper function to generate unique ID for new users
 function generateUserId(): string {
@@ -58,9 +34,52 @@ export async function GET(request: NextRequest): Promise<NextResponse<UsersRespo
       offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined,
     };
 
-    let users = await readUsers();
+    // Build Supabase query options
+    const queryOptions: any = {
+      select: '*',
+      count: true
+    };
 
-    // Apply filters
+    // Add where conditions for exact matches
+    const whereConditions: any = {};
+    if (filters.status) {
+      whereConditions.status = filters.status;
+    }
+    if (filters.role) {
+      whereConditions.role = filters.role;
+    }
+    if (filters.kycStatus) {
+      whereConditions.kyc_status = filters.kycStatus;
+    }
+
+    if (Object.keys(whereConditions).length > 0) {
+      queryOptions.where = whereConditions;
+    }
+
+    // Add pagination
+    if (filters.limit) {
+      queryOptions.limit = filters.limit;
+    }
+    if (filters.offset) {
+      queryOptions.offset = filters.offset;
+    }
+
+    // Add ordering
+    queryOptions.order = 'created_at.desc';
+
+    const result = await supabase.select<User>('integra_users', queryOptions);
+
+    if (result.error) {
+      console.error('Error fetching users from Supabase:', result.error);
+      return NextResponse.json(
+        { success: false, error: result.error.message },
+        { status: 500 }
+      );
+    }
+
+    let users = result.data || [];
+
+    // Apply search filter (text search needs to be done client-side for now)
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       users = users.filter(user =>
@@ -71,32 +90,10 @@ export async function GET(request: NextRequest): Promise<NextResponse<UsersRespo
       );
     }
 
-    if (filters.status) {
-      users = users.filter(user => user.status === filters.status);
-    }
-
-    if (filters.role) {
-      users = users.filter(user => user.role === filters.role);
-    }
-
-    if (filters.kycStatus) {
-      users = users.filter(user => user.kycStatus === filters.kycStatus);
-    }
-
-    const total = users.length;
-
-    // Apply pagination
-    if (filters.offset) {
-      users = users.slice(filters.offset);
-    }
-    if (filters.limit) {
-      users = users.slice(0, filters.limit);
-    }
-
     return NextResponse.json({
       success: true,
       data: users,
-      total
+      total: result.count || users.length
     });
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -120,37 +117,44 @@ export async function POST(request: NextRequest): Promise<NextResponse<UserRespo
       );
     }
 
-    const users = await readUsers();
-
     // Check if wallet address already exists
-    const existingUser = users.find(user =>
-      user.walletAddress.toLowerCase() === body.walletAddress.toLowerCase()
-    );
+    const existingUserResult = await supabase.select<User>('integra_users', {
+      where: { wallet_address: body.walletAddress.toLowerCase() },
+      limit: 1
+    });
 
-    if (existingUser) {
+    if (existingUserResult.error) {
+      console.error('Error checking existing user:', existingUserResult.error);
+      return NextResponse.json(
+        { success: false, error: 'Database error' },
+        { status: 500 }
+      );
+    }
+
+    if (existingUserResult.data && existingUserResult.data.length > 0) {
       return NextResponse.json(
         { success: false, error: 'User with this wallet address already exists' },
         { status: 409 }
       );
     }
 
-    // Create new user
+    // Prepare new user data for database (using snake_case for column names)
     const now = new Date().toISOString();
-    const newUser: User = {
+    const newUserData = {
       id: generateUserId(),
-      walletAddress: body.walletAddress.toLowerCase(),
+      wallet_address: body.walletAddress.toLowerCase(),
       email: body.email,
-      displayName: body.displayName || 'Unknown User',
+      display_name: body.displayName || 'Unknown User',
       status: 'pending',
       role: body.role || 'user',
-      totalInvestments: '0.0',
-      propertiesOwned: 0,
-      joinDate: now,
-      kycStatus: 'pending',
+      total_investments: '0.0',
+      properties_owned: 0,
+      join_date: now,
+      kyc_status: 'pending',
       bio: body.bio,
       location: body.location,
-      investmentPreferences: body.investmentPreferences || [],
-      socialLinks: {
+      investment_preferences: body.investmentPreferences || [],
+      social_links: {
         twitter: '',
         linkedin: '',
         website: '',
@@ -160,15 +164,52 @@ export async function POST(request: NextRequest): Promise<NextResponse<UserRespo
         email: true,
         sms: false,
         push: true
-      },
-      createdAt: now,
-      updatedAt: now
+      }
     };
 
-    users.push(newUser);
-    await writeUsers(users);
+    const result = await supabase.insert<User>('integra_users', newUserData);
 
-    return NextResponse.json({ success: true, data: newUser });
+    if (result.error) {
+      console.error('Error creating user in Supabase:', result.error);
+      return NextResponse.json(
+        { success: false, error: result.error.message },
+        { status: 500 }
+      );
+    }
+
+    // Convert database response back to camelCase for API response
+    const createdUser = result.data as any;
+    if (createdUser && Array.isArray(createdUser) && createdUser.length > 0) {
+      const user = createdUser[0];
+      const responseUser: User = {
+        id: user.id,
+        walletAddress: user.wallet_address,
+        email: user.email,
+        displayName: user.display_name,
+        status: user.status,
+        role: user.role,
+        totalInvestments: user.total_investments,
+        propertiesOwned: user.properties_owned,
+        joinDate: user.join_date,
+        lastActive: user.last_active,
+        kycStatus: user.kyc_status,
+        profileImage: user.profile_image,
+        bio: user.bio,
+        location: user.location,
+        investmentPreferences: user.investment_preferences,
+        socialLinks: user.social_links,
+        notifications: user.notifications,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at
+      };
+
+      return NextResponse.json({ success: true, data: responseUser });
+    }
+
+    return NextResponse.json(
+      { success: false, error: 'User creation failed' },
+      { status: 500 }
+    );
   } catch (error) {
     console.error('Error creating user:', error);
     return NextResponse.json(

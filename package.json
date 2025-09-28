@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "npx next dev",
     "build": "npx next build",
+    "build:static": "NEXT_PUBLIC_IPFS_BUILD=true npx next build",
     "start": "npx next start",
     "lint": "npx next lint",
     "format": "npx prettier --write . '!(node_modules|.next|contracts)/**/*'",
